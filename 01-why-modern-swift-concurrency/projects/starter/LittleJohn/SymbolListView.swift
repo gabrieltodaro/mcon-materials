@@ -54,10 +54,12 @@ struct SymbolListView: View {
           if symbols.isEmpty {
             ProgressView().padding()
           }
+
           ForEach(symbols, id: \.self) { symbolName in
             SymbolRow(symbolName: symbolName, selected: $selected)
           }
           .font(.custom("FantasqueSansMono-Regular", size: 18))
+
         }, header: Header.init)
       }
       .listStyle(.plain)
@@ -76,6 +78,14 @@ struct SymbolListView: View {
         Text(lastErrorMessage)
       })
       .padding(.horizontal)
+			.task {
+				guard symbols.isEmpty else { return }
+				do {
+					symbols = try await model.availableSymbols()
+				} catch {
+					lastErrorMessage = error.localizedDescription
+				}
+			}
       .navigationDestination(isPresented: $isDisplayingTicker) {
         TickerView(selectedSymbols: Array(selected).sorted())
           .environmentObject(model)
